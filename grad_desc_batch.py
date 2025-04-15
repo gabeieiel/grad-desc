@@ -37,7 +37,7 @@ def der_parc_a(X_REAL, Y_REAL, Y_CALC):
 
     sigma = sum(x * (y - y_obs) for x,y,y_obs in zip(X_REAL,Y_REAL,Y_CALC))
     
-    return (2/n) * sigma
+    return -(2/n) * sigma
 
 def der_parc_b(Y_REAL, Y_CALC):
     '''
@@ -56,7 +56,7 @@ def der_parc_b(Y_REAL, Y_CALC):
 
     sigma = sum(y_real - y_calc for y_real,y_calc in zip(Y_REAL,Y_CALC))
 
-    return (2/n) * sigma
+    return -(2/n) * sigma
     
 def eqm(Y_REAL, Y_CALC):
     '''
@@ -114,8 +114,8 @@ def grad_desc_iter(a, b, alpha, epsilon, epocas, X_REAL, Y_REAL):
 
         eqm_atual = eqm(Y_REAL, Y_CALC)
         
-        EQMs.append(eqm_atual)
-
+        if epoca % 50 == 0:
+            EQMs.append(f"Iteração {epoca}, EQM = {eqm_atual}")
 
         ### condição de parada ###
         if abs(eqm_atual - eqm_ant) <= epsilon:
@@ -138,7 +138,9 @@ def grad_desc_iter(a, b, alpha, epsilon, epocas, X_REAL, Y_REAL):
         a -= alpha*dpa
         b -= alpha*dpb
 
-        print(f"a: {a:.5f}, b: {b:.5f}, delta a: {-alpha*dpa:.5f}, delta b: {-alpha*dpb:.5f}")
+        if epoca % 50 == 0:
+            print(f"iteração {epoca}")
+            print(f"a: {a:.5f}, b: {b:.5f}, delta a: {-alpha*dpa:.5f}, delta b: {-alpha*dpb:.5f}")
 
         if epoca == epocas - 1:
             print(f"\na = {a_inicial}  b = {b_inicial}")
@@ -158,11 +160,11 @@ def main():
 
     
     ### dados do california housing ###
-    X_REAL = dados().data[:, 0]     # dados de entrada (features)
-    X_REAL = (X_REAL - X_REAL.mean()) / X_REAL.std()    # normalização dos dados
+    X_REAL = dados().data[:, 0]                         # dados de entrada (features)
+    #X_REAL = (X_REAL - X_REAL.mean()) / X_REAL.std()    # normalização dos dados
 
-    Y_REAL = dados().target         # variável alvo (preço médio de casa)
-    
+    Y_REAL = dados().target                             # variável alvo (preço médio de casa)
+    #Y_REAL = (Y_REAL - Y_REAL.mean()) / Y_REAL.std()    # normalização da variável
 
     # coeficientes de f gerados aleatoriamente
     a = random.uniform(-100,100)    # coeficiente angular de f
