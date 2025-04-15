@@ -1,4 +1,5 @@
 import  sys
+import  time
 import  random
 import  numpy as np
 import  matplotlib.pyplot as plt
@@ -99,6 +100,8 @@ def grad_desc_iter(a, b, alpha, epsilon, epocas, X_REAL, Y_REAL):
                                 textit{b} quando |ek1 - ek| <= epsilon.
     '''
 
+    tempo_inicial = time.time()
+
     a_inicial = a
     b_inicial = b
 
@@ -123,6 +126,8 @@ def grad_desc_iter(a, b, alpha, epsilon, epocas, X_REAL, Y_REAL):
             print(f"A função minimizada é aproximadamente f(x) = {a}x + {b} com epsilon = {epsilon}\n\n")
             print(EQMs)
 
+            
+
             DADOS_FINAIS = [a, b]
 
             return DADOS_FINAIS 
@@ -146,6 +151,10 @@ def grad_desc_iter(a, b, alpha, epsilon, epocas, X_REAL, Y_REAL):
             print(f"\na = {a_inicial}  b = {b_inicial}")
             print(f"A função minimizada (sem condição de parada) é aproximadamente f(x) = {a}x + {b}\ncom epsilon = {epsilon}\n\n")
             print(EQMs)
+
+            tempo_final = time.time()
+
+            print(f"Tempo de execução = {tempo_final - tempo_inicial} segundos\n")
 
             DADOS_FINAIS = [a, b]
 
