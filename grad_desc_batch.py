@@ -1,9 +1,9 @@
 import  sys
-import  time
 import  random
-import  numpy as np
 import  matplotlib.pyplot as plt
 from    sklearn.datasets import fetch_california_housing as dados
+
+
 
 def f(x, a, b):
     '''
@@ -18,6 +18,8 @@ def f(x, a, b):
         float y: Ordenada de f(x) 
     '''
     return a*x + b
+
+
 
 def der_parc_a(X_REAL, Y_REAL, Y_CALC):
     '''
@@ -40,6 +42,8 @@ def der_parc_a(X_REAL, Y_REAL, Y_CALC):
     
     return -(2/n) * sigma
 
+
+
 def der_parc_b(Y_REAL, Y_CALC):
     '''
     ENTRADAS:
@@ -59,6 +63,8 @@ def der_parc_b(Y_REAL, Y_CALC):
 
     return -(2/n) * sigma
     
+
+
 def eqm(Y_REAL, Y_CALC):
     '''
     ENTRADA:
@@ -80,6 +86,27 @@ def eqm(Y_REAL, Y_CALC):
     return eqm
 
 
+
+def plota_pontos(DOMINIO, IMAGEM):
+
+    plt.scatter(DOMINIO, IMAGEM, color='blue', label='Pontos da Amostra')
+
+    return
+
+
+
+def plota_reta(DOMINIO, IMAGEM, cor, label_reta, titulo, eixo_x, eixo_y):
+ 
+    plt.plot(DOMINIO, IMAGEM, linestyle='-', color=cor, linewidth=2, label=label_reta)
+
+    plt.title(titulo)
+    plt.xlabel(eixo_x)
+    plt.ylabel(eixo_y)
+    plt.legend()
+
+    return
+
+
 def grad_desc_iter(a, b, alpha, epsilon, epocas, X_REAL, Y_REAL):
     '''
     ENTRADAS:
@@ -97,17 +124,13 @@ def grad_desc_iter(a, b, alpha, epsilon, epocas, X_REAL, Y_REAL):
 
     SAÍDA:
         float[] DADOS_FINAIS:   array com os valores dos coeficientes textit{a} e 
-                                textit{b} quando |ek1 - ek| <= epsilon.
+                                textit{b} quando |eqm_{k+1} - eqm_{k}| <= epsilon.
     '''
 
-    tempo_inicial = time.time()
+    EQMs = []                   # array de eqm's a cada iteração
 
-    a_inicial = a
-    b_inicial = b
+    eqm_ant = 0.0               # erro quadrático médio anterior, usado para comparação
 
-    EQMs = []
-
-    eqm_ant = 0.0       # erro quadrático médio anterior, usado para comparação
 
     ## LOOP DO GRADIENTE DESCENDENTE ##
     for epoca in range(epocas):
@@ -115,24 +138,29 @@ def grad_desc_iter(a, b, alpha, epsilon, epocas, X_REAL, Y_REAL):
         ### valores de f nas abcissas da amostra
         Y_CALC = [f(x, a, b) for x in X_REAL]
 
+
+        ### cálculo do eqm e adição ao array
         eqm_atual = eqm(Y_REAL, Y_CALC)
+        EQMs.append(eqm_atual)
         
-        if epoca % 50 == 0:
-            EQMs.append(f"Iteração {epoca}, EQM = {eqm_atual}")
 
-        ### condição de parada ###
+        ### CONDIÇÃO DE PARADA ###
         if abs(eqm_atual - eqm_ant) <= epsilon:
-            print(f"\na = {a_inicial}  b = {b_inicial}")
-            print(f"A função minimizada é aproximadamente f(x) = {a}x + {b} com epsilon = {epsilon}\n\n")
-            print(EQMs)
-
             
+            print(f"A função minimizada ÓTIMA é aproximadamente f(x) = {a}x + {b} com epsilon = {epsilon}\n\n")
+            
+            titulo = f"Reta de f(x) ~ {a:.3f}x + {b:.3f} com {epocas} épocas \nlearning rate = {alpha}; epsilon = {epsilon}"
+            label = "Função f(x) otimizada"
 
-            DADOS_FINAIS = [a, b]
+            plota_pontos(X_REAL,Y_REAL)
+            plota_reta(X_REAL, Y_CALC, 'r', label, titulo, "Eixo x", "Eixo y")
 
-            return DADOS_FINAIS 
+            plt.show(block=False)
+
+            return EQMs
         
-        eqm_ant = eqm_atual
+        
+        eqm_ant = eqm_atual     # atualização do eqm anterior
 
 
         ### DERIVADAS PARCIAIS ###
@@ -140,25 +168,25 @@ def grad_desc_iter(a, b, alpha, epsilon, epocas, X_REAL, Y_REAL):
         dpb = der_parc_b(Y_REAL, Y_CALC)
 
 
+        ### ATUALIZAÇÃO DOS PARÂMETROS ###
         a -= alpha*dpa
         b -= alpha*dpb
 
-        if epoca % 50 == 0:
-            print(f"iteração {epoca}")
-            print(f"a: {a:.5f}, b: {b:.5f}, delta a: {-alpha*dpa:.5f}, delta b: {-alpha*dpb:.5f}")
 
+        ### ÚLTIMA ITERAÇÃO ###
         if epoca == epocas - 1:
-            print(f"\na = {a_inicial}  b = {b_inicial}")
-            print(f"A função minimizada (sem condição de parada) é aproximadamente f(x) = {a}x + {b}\ncom epsilon = {epsilon}\n\n")
-            print(EQMs)
+            
+            print(f"A função parcialmente minimizada é f(x) ~ {a}x + {b} com epsilon = {epsilon}\n\n")
 
-            tempo_final = time.time()
+            titulo = f"Reta de f(x) ~ {a:.3f}x + {b:.3f} com {epocas} épocas \nlearning rate = {alpha}; epsilon = {epsilon}"
+            label = "Função f(x) parcialmente minimizada"
 
-            print(f"Tempo de execução = {tempo_final - tempo_inicial} segundos\n")
+            plota_pontos(X_REAL,Y_REAL)
+            plota_reta(X_REAL, Y_CALC, 'r', label, titulo, "Eixo x", "Eixo y")
+            
+            plt.show()
 
-            DADOS_FINAIS = [a, b]
-
-            return DADOS_FINAIS 
+            return EQMs
 
 
 
@@ -169,31 +197,25 @@ def main():
 
     
     ### dados do california housing ###
-    X_REAL = dados().data[:, 0]                         # dados de entrada (features)
-    #X_REAL = (X_REAL - X_REAL.mean()) / X_REAL.std()    # normalização dos dados
+    X_REAL = dados().data[:, 0]     # dados de entrada [0,5]
+    Y_REAL = dados().target         # variável alvo (preço médio de casa)
 
-    Y_REAL = dados().target                             # variável alvo (preço médio de casa)
-    #Y_REAL = (Y_REAL - Y_REAL.mean()) / Y_REAL.std()    # normalização da variável
 
-    # coeficientes de f gerados aleatoriamente
-    a = random.uniform(-100,100)    # coeficiente angular de f
-    b = random.uniform(-100,100)    # coeficiente linear de f
-    
+    ### coeficientes de f gerados aleatoriamente ###
+    a = random.uniform(-100,100)
+    b = random.uniform(-100,100)    
 
-    grad_desc_iter(a, b, alpha, epsilon, epocas, X_REAL, Y_REAL)
-    
+    ERROS = grad_desc_iter(a, b, alpha, epsilon, epocas, X_REAL, Y_REAL)
 
-    '''
-    plt.figure(figsize=(8, 6))
-    plt.scatter(X, Y, color='blue', label='Dados Originais')
- 
-    ## PLOTAGEM ##
-    plt.plot(X, Y_obs, linestyle='-', color='r', linewidth=2, label="Reta minimizada")
+    titulo_erro =   "Progressão do Erro Quadrático Médio (EQM) de f(x)"
+    label_erro  =   "EQM"
 
-    plt.title("Gradiente Descendente Iterativo")
-    plt.xlabel("Eixo x")
-    plt.ylabel("Eixo y")
-    plt.show()'''
+    DOMINIO_ERRO = list(range(epocas))
+
+    plota_reta(DOMINIO_ERRO, ERROS, 'r', label_erro, titulo_erro, "Iterações", "Erro")
+
+    plt.show()
+
 
 if __name__ == "__main__":
     main()
